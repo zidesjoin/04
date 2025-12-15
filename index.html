@@ -1,0 +1,414 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+
+  <head>
+
+    <meta charset="UTF-8">
+
+    <title>Overview - DevExtreme Tab Panel</title>
+    <link rel='stylesheet' href='https://cdn3.devexpress.com/jslib/20.1.4/css/dx.common.css'>
+
+    <link rel='stylesheet' href='https://cdn3.devexpress.com/jslib/20.1.4/css/dx.light.css'>
+
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/event.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/supplemental.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cldrjs/0.4.4/cldr/unresolved.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/globalize/1.1.1/globalize.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/globalize/1.1.1/globalize/message.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/globalize/1.1.1/globalize/number.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/globalize/1.1.1/globalize/currency.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/globalize/1.1.1/globalize/date.min.js'></script>
+
+
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.2/jszip.min.js'></script>
+
+    <script src='https://cdn3.devexpress.com/jslib/20.1.4/js/dx.all.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.4.0/polyfill.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.0.0/jspdf.umd.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.9/jspdf.plugin.autotable.min.js'></script>
+
+    <script src='https://kuznetsovvn.github.io/DevExtreme_DataGridToPDF/js/exporter/exportDataGrid.js'></script>
+  </head>
+
+<style>
+
+
+
+
+#DataGrid {
+ height: %;
+ }
+
+
+.btn,.btn:active {
+  background-color: orange;
+  border-color: red;
+  border: none;
+  color: white; /*#ffe484;*/
+
+  cursor: pointer;
+  width: 100%;
+
+  font-size: 15px; /*18*/
+  font-weight:600; /* = bold;*/
+  font-family: Arial;
+}
+
+.btn:hover {
+  background-color:red;
+  border-color:orange;
+  /*color:#2a2730;*/
+}
+
+</style>
+
+<script>
+
+/* =========================== EXPORT FOURNISSEUR =========================== */
+
+$(function () {
+
+  window.jsPDF = window.jspdf.jsPDF;
+  applyPlugin(window.jsPDF);
+
+  $('#ExportBtn_sf').dxButton({
+    text: 'Export to PDF',
+    /*type: "danger", /*danger*/
+
+     onClick: () => {
+
+      const pdfDoc = new jsPDF('p', 'pt', 'a4');
+
+      const options = {
+        pdfDoc: pdfDoc,
+        component: $('#solde_f').dxDataGrid('instance')
+      };
+
+      exportDataGrid(options).then(() => {
+          pdfDoc.setFontSize(12);
+          const pageCount = pdfDoc.internal.getNumberOfPages();
+          for(let i = 1; i <= pageCount; i++) {
+
+            pdfDoc.setPage(i);
+
+            const pageSize = pdfDoc.internal.pageSize;
+            const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            const header = 'Solde fournisseurs: ( ' + new Date().toLocaleString() + ' )';
+            const footer = `${i} / ${pageCount}`;
+
+            // Header
+
+            pdfDoc.text(header, 40, 15, { baseline: 'top' });
+
+            // Footer
+
+            pdfDoc.text(footer, pageWidth / 2 - (pdfDoc.getTextWidth(footer) / 2), pageHeight - 15, { baseline: 'bottom' });
+        }
+      }).then(() => {
+        pdfDoc.save('PDFfile_Fournisseur.pdf');
+      });
+    }
+  });
+});
+
+/* =========================== EXPORT CLIENT =========================== */
+
+$(function () {
+
+  window.jsPDF = window.jspdf.jsPDF;
+  applyPlugin(window.jsPDF);
+
+  $('#ExportBtn_sc').dxButton({
+    text: 'Export to PDF',
+    /*type: "danger",*/
+    onClick: () => {
+
+      const pdfDoc = new jsPDF('p', 'pt', 'a4');
+
+      const options = {
+        pdfDoc: pdfDoc,
+        component: $('#solde_c').dxDataGrid('instance')
+      };
+
+      exportDataGrid(options).then(() => {
+
+          pdfDoc.setFontSize(12);
+
+          const pageCount = pdfDoc.internal.getNumberOfPages();
+          for(let i = 1; i <= pageCount; i++) {
+
+            pdfDoc.setPage(i);
+
+            const pageSize = pdfDoc.internal.pageSize;
+            const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            const header = 'Solde clients: ( ' + new Date().toLocaleString() + ' )';
+            const footer = `${i} / ${pageCount}`;
+
+            // Header
+
+            pdfDoc.text(header, 40, 15, { baseline: 'top' });
+
+            // Footer
+
+            pdfDoc.text(footer, pageWidth / 2 - (pdfDoc.getTextWidth(footer) / 2), pageHeight - 15, { baseline: 'bottom' });
+        }
+      }).then(() => {
+        pdfDoc.save('PDFfile_Client.pdf');
+      });
+    }
+  });
+});
+
+/* =========================== EXPORT CAISSE =========================== */
+
+$(function () {
+
+  window.jsPDF = window.jspdf.jsPDF;
+  applyPlugin(window.jsPDF);
+
+  $('#ExportBtn_ss').dxButton({
+    text: 'Export to PDF',
+    /*type: "danger",*/
+    onClick: () => {
+
+      const pdfDoc = new jsPDF('p', 'pt', 'a4');
+
+      const options = {
+        pdfDoc: pdfDoc,
+        component: $('#solde_s').dxDataGrid('instance')
+      };
+
+      exportDataGrid(options).then(() => {
+
+          pdfDoc.setFontSize(12);
+
+          const pageCount = pdfDoc.internal.getNumberOfPages();
+          for(let i = 1; i <= pageCount; i++) {
+
+            pdfDoc.setPage(i);
+
+            const pageSize = pdfDoc.internal.pageSize;
+            const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            const header = 'Solde caisse: ( ' + new Date().toLocaleString() + ' )';
+            const footer = `${i} / ${pageCount}`;
+
+            // Header
+
+            pdfDoc.text(header, 40, 15, { baseline: 'top' });
+
+            // Footer
+
+            pdfDoc.text(footer, pageWidth / 2 - (pdfDoc.getTextWidth(footer) / 2), pageHeight - 15, { baseline: 'bottom' });
+        }
+      }).then(() => {
+        pdfDoc.save('PDFfile_Caisse.pdf');
+      });
+    }
+  });
+});
+
+</script>
+
+<script>
+
+window.onload = function() {
+
+  var tabPanel = $('#Tab_soldes').dxTabPanel({
+    
+dataSource: [
+      
+{ title: '', template: "" 
+},
+      
+{ title: 'Solde fournisseurs', template: "tab_sf" 
+},
+      
+{
+ title: 'Solde clients',
+ template: "tab_sc" 
+},
+      
+{
+ title: 'Solde caisse',
+ template: "tab_ss" 
+},
+    
+],
+
+    deferRendering: false,
+  
+}).dxTabPanel("instance");
+
+/* =========================== SOLDE FOURNISSEUR =========================== */
+
+ var solde_f = $("#solde_f").dxDataGrid({
+    key: "ID",
+    dataSource: sfour,
+
+    showBorders: true,
+
+    showRowLines: true,
+
+    rowAlternationEnabled: true,
+
+    hoverStateEnabled: true,
+
+    columns: [
+
+      'Fournisseur',
+
+      { dataField: "NTel1", caption: "N°: Tel 1", alignment: "center", width: 120 },
+
+      { dataField: "NTel2", caption: "N°: Tel 2", alignment: "center", width: 120 },
+
+      { dataField: "Solde", alignment: "right", format: "#,##0.00", width: 120 },
+
+    ],
+
+    summary: {
+
+      totalItems: [
+
+        { column: 'Fournisseur', summaryType: 'count', displayFormat: 'Fournisseur(s): {0}' },
+
+        { column: 'Solde', summaryType: 'sum', displayFormat: 'Total: {0}', valueFormat: '#,##0.00', }
+      ],
+
+    },
+
+  }).dxDataGrid('instance');
+
+/* =========================== SOLDE CLIENT =========================== */
+ 
+ var solde_c = $("#solde_c").dxDataGrid({
+
+    key: "ID",
+    dataSource: sclnt,
+
+    showBorders: true,
+
+    showRowLines: true,
+
+    rowAlternationEnabled: true,
+
+    hoverStateEnabled: true,
+
+    columns: [
+
+      'Client',
+
+      { dataField: "NTel1", caption: "N°: Tel 1", alignment: "center", width: 120 },
+
+      { dataField: "NTel2", caption: "N°: Tel 2", alignment: "center", width: 120 },
+
+      { dataField: "Solde", alignment: "right", format: "#,##0.00", width: 120 },
+
+    ],
+
+    summary: {
+
+      totalItems: [
+
+        { column: 'Client', summaryType: 'count', displayFormat: 'Client(s): {0}' },
+
+        { column: 'Solde', summaryType: 'sum', displayFormat: 'Total: {0}', valueFormat: '#,##0.00', }
+      ],
+
+    },
+
+  }).dxDataGrid('instance');
+
+/* =========================== SOLDE CAISSE =========================== */
+ 
+ var solde_s = $("#solde_s").dxDataGrid({
+
+    key: "ID",
+    dataSource: scaise,
+
+    showBorders: true,
+
+    showRowLines: true,
+
+    rowAlternationEnabled: true,
+
+    hoverStateEnabled: true,
+
+    columns: [
+
+      'Compte',
+
+      { dataField: "Entree", caption: "Entrée", alignment: "right", format: "#,##0.00", width: 120 },
+      { dataField: "Sortie", caption: "Sortie", alignment: "right", format: "#,##0.00", width: 120 },
+
+      { dataField: "Solde", alignment: "right", format: "#,##0.00", width: 120 },
+
+    ],
+
+    summary: {
+
+      totalItems: [
+
+        { column: 'Compte', summaryType: 'count', displayFormat: 'Mouvement(s): {0}' },
+
+        { column: 'Solde', summaryType: 'sum', displayFormat: 'Total: {0}', valueFormat: '#,##0.00', }
+      ],
+
+    },
+
+  }).dxDataGrid('instance');
+
+}
+
+</script>
+
+<body>
+  <div id="Tab_soldes">
+
+  
+  <div data-options="dxTemplate : { name: 'tab_sf' } ">
+      <div class="btn" id="ExportBtn_sf"></div>
+  
+    <div id="solde_f"></div>
+  
+  </div>
+
+  <div data-options="dxTemplate : { name: 'tab_sc' } ">
+      <div class="btn" id="ExportBtn_sc"></div>
+  
+    <div id="solde_c"></div>
+  
+  </div>
+  
+  <div data-options="dxTemplate : { name: 'tab_ss' } ">
+      <div class="btn" id="ExportBtn_ss"></div>
+  
+    <div id="solde_s"></div>
+  
+  </div>
+  
+</div>
+
+  <script src="./data.js"></script>
+
+</body>
+
+</html>
